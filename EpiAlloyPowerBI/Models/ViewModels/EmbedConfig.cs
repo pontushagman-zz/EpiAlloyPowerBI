@@ -31,5 +31,6 @@ namespace EpiAlloyPowerBI.Models.ViewModels
         public string Roles { get; set; }
 
         public string ErrorMessage { get; internal set; }
+        public string EmbedTokenString { get; set; }
     }
 }

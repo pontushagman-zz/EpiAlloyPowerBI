@@ -29,11 +29,11 @@ namespace EpiAlloyPowerBI.Controllers
 
         public override ActionResult Index(PowerBIBlock currentBlock)
         {
-            return PartialView(currentBlock);
-
+            //return PartialView(currentBlock);
+            return EmbedReport(Username, Password);
         }
 
-        public async Task<ActionResult> EmbedReport(string username, string roles)
+        public ActionResult EmbedReport(string username, string roles)
         {
             var result = new EmbedConfig();
             try
@@ -43,7 +43,7 @@ namespace EpiAlloyPowerBI.Controllers
                 if (error != null)
                 {
                     result.ErrorMessage = error;
-                    return View(result);
+                    return PartialView(result);
                 }
 
                 // Create a user password cradentials.
@@ -51,12 +51,16 @@ namespace EpiAlloyPowerBI.Controllers
 
                 // Authenticate using created credentials
                 var authenticationContext = new AuthenticationContext(AuthorityUrl);
-                var authenticationResult = await authenticationContext.AcquireTokenAsync(ResourceUrl, ClientId, credential);
+                var authenticationResult =
+                    Task.Run(async () => await authenticationContext.AcquireTokenAsync(ResourceUrl, ClientId, credential)).Result;
+
+
+
 
                 if (authenticationResult == null)
                 {
                     result.ErrorMessage = "Authentication Failed.";
-                    return View(result);
+                    return PartialView(result);
                 }
 
                 var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
@@ -65,7 +69,7 @@ namespace EpiAlloyPowerBI.Controllers
                 using (var client = new PowerBIClient(new Uri(ApiUrl), tokenCredentials))
                 {
                     // Get a list of reports.
-                    var reports = await client.Reports.GetReportsInGroupAsync(GroupId);
+                    var reports = Task.Run(async () => await client.Reports.GetReportsInGroupAsync(GroupId)).Result;
 
                     Report report;
                     if (string.IsNullOrEmpty(ReportId))
@@ -81,15 +85,16 @@ namespace EpiAlloyPowerBI.Controllers
                     if (report == null)
                     {
                         result.ErrorMessage = "Group has no reports.";
-                        return View(result);
+                        return PartialView(result);
                     }
 
-                    var datasets = await client.Datasets.GetDatasetByIdInGroupAsync(GroupId, report.DatasetId);
+                    var datasets = Task.Run(async () => await client.Datasets.GetDatasetByIdInGroupAsync(GroupId, report.DatasetId)).Result;
                     result.IsEffectiveIdentityRequired = datasets.IsEffectiveIdentityRequired;
                     result.IsEffectiveIdentityRolesRequired = datasets.IsEffectiveIdentityRolesRequired;
                     GenerateTokenRequest generateTokenRequestParameters;
                     // This is how you create embed token with effective identities
-                    if (!string.IsNullOrEmpty(username))
+                    //if (!string.IsNullOrEmpty(username))
+                    if (false)
                     {
                         var rls = new EffectiveIdentity(username, new List<string> { report.DatasetId });
                         if (!string.IsNullOrWhiteSpace(roles))
@@ -107,20 +112,20 @@ namespace EpiAlloyPowerBI.Controllers
                         generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: "view");
                     }
 
-                    var tokenResponse = await client.Reports.GenerateTokenInGroupAsync(GroupId, report.Id, generateTokenRequestParameters);
+                    var tokenResponse = Task.Run(async () => await client.Reports.GenerateTokenInGroupAsync(GroupId, report.Id, generateTokenRequestParameters)).Result;
 
                     if (tokenResponse == null)
                     {
                         result.ErrorMessage = "Failed to generate embed token.";
-                        return View(result);
+                        return PartialView(result);
                     }
 
                     // Generate Embed Configuration.
-                    result.EmbedToken = tokenResponse;
+                    result.EmbedTokenString = tokenResponse.Token;
                     result.EmbedUrl = report.EmbedUrl;
                     result.Id = report.Id;
 
-                    return View(result);
+                    return PartialView(result);
                 }
             }
             catch (HttpOperationException exc)
@@ -132,152 +137,8 @@ namespace EpiAlloyPowerBI.Controllers
                 result.ErrorMessage = exc.ToString();
             }
 
-            return View(result);
+            return PartialView(result);
         }
-
-        public async Task<ActionResult> EmbedDashboard()
-        {
-            var error = GetWebConfigErrors();
-            if (error != null)
-            {
-                return View(new EmbedConfig()
-                {
-                    ErrorMessage = error
-                });
-            }
-
-            // Create a user password cradentials.
-            var credential = new UserPasswordCredential(Username, Password);
-
-            // Authenticate using created credentials
-            var authenticationContext = new AuthenticationContext(AuthorityUrl);
-            var authenticationResult = await authenticationContext.AcquireTokenAsync(ResourceUrl, ClientId, credential);
-
-            if (authenticationResult == null)
-            {
-                return View(new EmbedConfig()
-                {
-                    ErrorMessage = "Authentication Failed."
-                });
-            }
-
-            var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
-
-            // Create a Power BI Client object. It will be used to call Power BI APIs.
-            using (var client = new PowerBIClient(new Uri(ApiUrl), tokenCredentials))
-            {
-                // Get a list of dashboards.
-                var dashboards = await client.Dashboards.GetDashboardsInGroupAsync(GroupId);
-
-                // Get the first report in the group.
-                var dashboard = dashboards.Value.FirstOrDefault();
-
-                if (dashboard == null)
-                {
-                    return View(new EmbedConfig()
-                    {
-                        ErrorMessage = "Group has no dashboards."
-                    });
-                }
-
-                // Generate Embed Token.
-                var generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: "view");
-                var tokenResponse = await client.Dashboards.GenerateTokenInGroupAsync(GroupId, dashboard.Id, generateTokenRequestParameters);
-
-                if (tokenResponse == null)
-                {
-                    return View(new EmbedConfig()
-                    {
-                        ErrorMessage = "Failed to generate embed token."
-                    });
-                }
-
-                // Generate Embed Configuration.
-                var embedConfig = new EmbedConfig()
-                {
-                    EmbedToken = tokenResponse,
-                    EmbedUrl = dashboard.EmbedUrl,
-                    Id = dashboard.Id
-                };
-
-                return View(embedConfig);
-            }
-        }
-
-        //public async Task<ActionResult> EmbedTile()
-        //{
-        //    var error = GetWebConfigErrors();
-        //    if (error != null)
-        //    {
-        //        return View(new TileEmbedConfig()
-        //        {
-        //            ErrorMessage = error
-        //        });
-        //    }
-
-        //    // Create a user password cradentials.
-        //    var credential = new UserPasswordCredential(Username, Password);
-
-        //    // Authenticate using created credentials
-        //    var authenticationContext = new AuthenticationContext(AuthorityUrl);
-        //    var authenticationResult = await authenticationContext.AcquireTokenAsync(ResourceUrl, ClientId, credential);
-
-        //    if (authenticationResult == null)
-        //    {
-        //        return View(new TileEmbedConfig()
-        //        {
-        //            ErrorMessage = "Authentication Failed."
-        //        });
-        //    }
-
-        //    var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
-
-        //    // Create a Power BI Client object. It will be used to call Power BI APIs.
-        //    using (var client = new PowerBIClient(new Uri(ApiUrl), tokenCredentials))
-        //    {
-        //        // Get a list of dashboards.
-        //        var dashboards = await client.Dashboards.GetDashboardsInGroupAsync(GroupId);
-
-        //        // Get the first report in the group.
-        //        var dashboard = dashboards.Value.FirstOrDefault();
-
-        //        if (dashboard == null)
-        //        {
-        //            return View(new TileEmbedConfig()
-        //            {
-        //                ErrorMessage = "Group has no dashboards."
-        //            });
-        //        }
-
-        //        var tiles = await client.Dashboards.GetTilesInGroupAsync(GroupId, dashboard.Id);
-
-        //        // Get the first tile in the group.
-        //        var tile = tiles.Value.FirstOrDefault();
-
-        //        // Generate Embed Token for a tile.
-        //        var generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: "view");
-        //        var tokenResponse = await client.Tiles.GenerateTokenInGroupAsync(GroupId, dashboard.Id, tile.Id, generateTokenRequestParameters);
-
-        //        if (tokenResponse == null)
-        //        {
-        //            return View(new TileEmbedConfig()
-        //            {
-        //                ErrorMessage = "Failed to generate embed token."
-        //            });
-        //        }
-
-        //        // Generate Embed Configuration.
-        //        var embedConfig = new TileEmbedConfig()
-        //        {
-        //            EmbedToken = tokenResponse,
-        //            EmbedUrl = tile.EmbedUrl,
-        //            Id = tile.Id,
-        //            dashboardId = dashboard.Id
-        //        };
-
-        //        return View(embedConfig);
-        //    }
-        //}
 
 
         /// <summary>
