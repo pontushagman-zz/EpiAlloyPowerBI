@@ -29,16 +29,10 @@ namespace EpiAlloyPowerBI.Controllers
 
         public override ActionResult Index(PowerBIBlock currentBlock)
         {
-            //return PartialView(currentBlock);
-            return EmbedReport(Username, Password);
-        }
-
-        public ActionResult EmbedReport(string username, string roles)
-        {
             var result = new EmbedConfig();
             try
             {
-                result = new EmbedConfig { Username = username, Roles = roles };
+                result = new EmbedConfig();
                 var error = GetWebConfigErrors();
                 if (error != null)
                 {
@@ -92,25 +86,8 @@ namespace EpiAlloyPowerBI.Controllers
                     result.IsEffectiveIdentityRequired = datasets.IsEffectiveIdentityRequired;
                     result.IsEffectiveIdentityRolesRequired = datasets.IsEffectiveIdentityRolesRequired;
                     GenerateTokenRequest generateTokenRequestParameters;
-                    // This is how you create embed token with effective identities
-                    //if (!string.IsNullOrEmpty(username))
-                    if (false)
-                    {
-                        var rls = new EffectiveIdentity(username, new List<string> { report.DatasetId });
-                        if (!string.IsNullOrWhiteSpace(roles))
-                        {
-                            var rolesList = new List<string>();
-                            rolesList.AddRange(roles.Split(','));
-                            rls.Roles = rolesList;
-                        }
-                        // Generate Embed Token with effective identities.
-                        generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: "view", identities: new List<EffectiveIdentity> { rls });
-                    }
-                    else
-                    {
-                        // Generate Embed Token for reports without effective identities.
-                        generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: "view");
-                    }
+                    generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: "view");
+
 
                     var tokenResponse = Task.Run(async () => await client.Reports.GenerateTokenInGroupAsync(GroupId, report.Id, generateTokenRequestParameters)).Result;
 
