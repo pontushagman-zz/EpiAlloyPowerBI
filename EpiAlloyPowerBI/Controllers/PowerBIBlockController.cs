@@ -11,6 +11,8 @@ using EPiServer.Web.Mvc;
 using Microsoft.PowerBI.Api.V2;
 using Microsoft.PowerBI.Api.V2.Models;
 using Microsoft.Rest;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using AuthenticationContext = Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext;
 
 namespace EpiAlloyPowerBI.Controllers
 {
