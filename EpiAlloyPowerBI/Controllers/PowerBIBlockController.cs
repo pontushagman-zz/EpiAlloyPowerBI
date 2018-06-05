@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.Mvc.Filters;
+using EpiAlloyPowerBI.Business.PowerBI;
 using EpiAlloyPowerBI.Models.Blocks;
 using EpiAlloyPowerBI.Models.ViewModels;
 using EPiServer.Web.Mvc;
@@ -12,6 +14,7 @@ using Microsoft.PowerBI.Api.V2;
 using Microsoft.PowerBI.Api.V2.Models;
 using Microsoft.Rest;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Newtonsoft.Json;
 using AuthenticationContext = Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext;
 
 namespace EpiAlloyPowerBI.Controllers
@@ -26,6 +29,8 @@ namespace EpiAlloyPowerBI.Controllers
         private static readonly string ApiUrl = ConfigurationManager.AppSettings["apiUrl"];
         private static readonly string GroupId = ConfigurationManager.AppSettings["groupId"];
         private static readonly string ReportId = ConfigurationManager.AppSettings["reportId"];
+
+        private static readonly string TokenUrl = ConfigurationManager.AppSettings["tokenUrl"];
 
         public override ActionResult Index(PowerBIBlock currentBlock)
         {
@@ -43,21 +48,76 @@ namespace EpiAlloyPowerBI.Controllers
                 // Create a user password cradentials.
                 var credential = new UserPasswordCredential(Username, Password);
 
-                // Authenticate using created credentials
-                var authenticationContext = new AuthenticationContext(AuthorityUrl);
-                var authenticationResult =
-                    Task.Run(async () => await authenticationContext.AcquireTokenAsync(ResourceUrl, ClientId, credential)).Result;
+                //// Authenticate using created credentials
+                //var authenticationContext = new AuthenticationContext(AuthorityUrl);
+                //var authenticationResult =
+                //    Task.Run(async () => await authenticationContext.AcquireTokenAsync(ResourceUrl, ClientId, credential)).Result;
 
 
+                //if (authenticationResult == null)
+                //{
+                //    result.ErrorMessage = "Authentication Failed.";
+                //    return PartialView(result);
+                //}
 
+                //var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
 
-                if (authenticationResult == null)
+                //Start not using PowerBI API nuget
+
+                OAuthResult oAuthResult;
+
+                using (var client = new HttpClient())
+
                 {
-                    result.ErrorMessage = "Authentication Failed.";
-                    return PartialView(result);
+
+                    client.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
+
+                    var _result = Task.Run(async () => client.PostAsync(
+
+                        new Uri(TokenUrl), new FormUrlEncodedContent(
+
+                            new[]
+
+                            {
+
+                                new KeyValuePair<string, string>("resource", ResourceUrl),
+
+                                new KeyValuePair<string, string>("client_id", ClientId),
+
+                                new KeyValuePair<string, string>("grant_type", "password"),
+
+                                new KeyValuePair<string, string>("username", Username),
+
+                                new KeyValuePair<string, string>("password", Password),
+
+                                new KeyValuePair<string, string>("scope", "openid"),
+
+                            }))).Result;
+
+                    if (_result.Result.IsSuccessStatusCode)
+
+                    {
+
+                        oAuthResult = JsonConvert.DeserializeObject<OAuthResult>(Task.Run(async () => await _result.Result.Content.ReadAsStringAsync()).Result);
+                    }
+
+                    else
+
+                    {
+
+                        result.ErrorMessage = "Authentication Failed.";
+
+                        return View(result);
+
+                    }
+
                 }
 
-                var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
+
+
+                var tokenCredentials = new TokenCredentials(oAuthResult.AccessToken, "Bearer");
+
+                //Stop not using PowerBI API nuget
 
                 // Create a Power BI Client object. It will be used to call Power BI APIs.
                 using (var client = new PowerBIClient(new Uri(ApiUrl), tokenCredentials))
@@ -87,7 +147,6 @@ namespace EpiAlloyPowerBI.Controllers
                     result.IsEffectiveIdentityRolesRequired = datasets.IsEffectiveIdentityRolesRequired;
                     GenerateTokenRequest generateTokenRequestParameters;
                     generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: "view");
-
 
                     var tokenResponse = Task.Run(async () => await client.Reports.GenerateTokenInGroupAsync(GroupId, report.Id, generateTokenRequestParameters)).Result;
 
