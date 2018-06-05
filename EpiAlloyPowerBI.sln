@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2043
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EpiAlloyPowerBI", "EpiAlloyPowerBI\EpiAlloyPowerBI.csproj", "{460874A3-A8DF-44B1-8B51-5E2A98785FB1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{460874A3-A8DF-44B1-8B51-5E2A98785FB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{460874A3-A8DF-44B1-8B51-5E2A98785FB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{460874A3-A8DF-44B1-8B51-5E2A98785FB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{460874A3-A8DF-44B1-8B51-5E2A98785FB1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AE37A805-7FFD-468E-B57C-E75F1F8F227D}
+	EndGlobalSection
+EndGlobal
