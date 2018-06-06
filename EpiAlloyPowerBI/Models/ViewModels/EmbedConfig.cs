@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.PowerBI.Api.V2.Models;
 
 namespace EpiAlloyPowerBI.Models.ViewModels
 {
@@ -9,16 +8,16 @@ namespace EpiAlloyPowerBI.Models.ViewModels
 
         public string EmbedUrl { get; set; }
 
-        public EmbedToken EmbedToken { get; set; }
+        public string EmbedToken { get; set; }
 
-        public int MinutesToExpiration
-        {
-            get
-            {
-                var minutesToExpiration = EmbedToken.Expiration.Value - DateTime.UtcNow;
-                return minutesToExpiration.Minutes;
-            }
-        }
+        //public int MinutesToExpiration
+        //{
+        //    get
+        //    {
+        //        var minutesToExpiration = EmbedToken.Expiration.Value - DateTime.UtcNow;
+        //        return minutesToExpiration.Minutes;
+        //    }
+        //}
 
         public bool? IsEffectiveIdentityRolesRequired { get; set; }
 
