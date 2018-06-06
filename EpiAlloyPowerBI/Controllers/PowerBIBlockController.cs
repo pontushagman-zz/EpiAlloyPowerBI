@@ -29,11 +29,18 @@ namespace EpiAlloyPowerBI.Controllers
         private static readonly string ClientId = ConfigurationManager.AppSettings["clientId"];
         private static readonly string ApiUrl = ConfigurationManager.AppSettings["apiUrl"];
         private static readonly string GroupId = ConfigurationManager.AppSettings["groupId"];
-        private static readonly string ReportId = ConfigurationManager.AppSettings["reportId"];
         private static readonly string EmbedUrlBase = ConfigurationManager.AppSettings["embedUrlBase"];
+
+        private string _reportId = ConfigurationManager.AppSettings["reportId"];
+
 
         public override ActionResult Index(PowerBIBlock currentBlock)
         {
+            if (!string.IsNullOrEmpty(currentBlock.ReportId))
+            {
+                _reportId = currentBlock.ReportId;
+            }
+
             var result = new EmbedConfig();
             try
             {
@@ -61,7 +68,7 @@ namespace EpiAlloyPowerBI.Controllers
                 }
                 
                 //Request embed token
-                var requestEmbedTokenUrl = string.Format("{0}/v1.0/myorg/groups/{1}/reports/{2}/GenerateToken", ApiUrl,GroupId, ReportId);
+                var requestEmbedTokenUrl = string.Format("{0}/v1.0/myorg/groups/{1}/reports/{2}/GenerateToken", ApiUrl,GroupId, _reportId);
                 var restClient = new RestClient(requestEmbedTokenUrl);
                 restClient.AddDefaultHeader("Authorization", string.Format("Bearer {0}", authenticationResult.AccessToken));
                 var request = new RestRequest(Method.POST);
@@ -75,8 +82,8 @@ namespace EpiAlloyPowerBI.Controllers
 
                 // Generate Embed Configuration.
                 result.EmbedToken = embedToken;
-                result.EmbedUrl = string.Format("{0}/reportEmbed?reportId={1}&groupId={2}", EmbedUrlBase, ReportId, GroupId);  
-                result.Id = ReportId;
+                result.EmbedUrl = string.Format("{0}/reportEmbed?reportId={1}&groupId={2}", EmbedUrlBase, _reportId, GroupId);  
+                result.Id = _reportId;
 
                 return PartialView(result); 
             }

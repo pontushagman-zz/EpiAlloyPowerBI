@@ -9,20 +9,20 @@ namespace EpiAlloyPowerBI.Models.Blocks
     public class PowerBIBlock : SiteBlockData
     {
 
-        [Display(Name = "Client ID", GroupName = SystemTabNames.Content, Order = 100)]
+        [Display(Name = "Report ID", GroupName = SystemTabNames.Content, Order = 100)]
         public virtual string ReportId { get; set; }
 
-        [Display(Name = "Client ID", GroupName = "Advanced", Order = 100)]
-        public virtual string ClientId { get; set; }
+        //[Display(Name = "Client ID", GroupName = "Advanced", Order = 100)]
+        //public virtual string ClientId { get; set; }
 
-        [Display(Name = "Group ID", GroupName = "Advanced", Order = 200)]
-        public virtual string GroupId { get; set; }
+        //[Display(Name = "Group ID", GroupName = "Advanced", Order = 200)]
+        //public virtual string GroupId { get; set; }
 
-        [Display(Name = "Power BI username", GroupName = "Advanced", Order = 300)]
-        public virtual string PbiUsername { get; set; }
+        //[Display(Name = "Power BI username", GroupName = "Advanced", Order = 300)]
+        //public virtual string PbiUsername { get; set; }
 
-        [Display(Name = "Power BI password", GroupName = "Advanced", Order = 400)]
-        public virtual string PbiPassword { get; set; }
+        //[Display(Name = "Power BI password", GroupName = "Advanced", Order = 400)]
+        //public virtual string PbiPassword { get; set; }
 
     }
 }
