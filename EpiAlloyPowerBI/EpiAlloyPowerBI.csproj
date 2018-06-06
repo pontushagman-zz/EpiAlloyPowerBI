@@ -399,6 +399,7 @@
     <Content Include="Static\gfx\plan.jpg" />
     <Content Include="Static\gfx\play.png" />
     <Content Include="Static\gfx\playInactive.png" />
+    <Content Include="Static\gfx\PowerBI_Logo.png" />
     <Content Include="Static\gfx\productLandingv2.png" />
     <Content Include="Static\gfx\searchbutton.png" />
     <Content Include="Static\gfx\searchbuttonsmall.png" />
