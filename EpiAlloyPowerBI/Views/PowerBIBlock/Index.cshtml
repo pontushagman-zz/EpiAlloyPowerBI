@@ -1,5 +1,4 @@
-﻿
-@model EpiAlloyPowerBI.Models.ViewModels.EmbedConfig
+﻿@model EpiAlloyPowerBI.Models.ViewModels.EmbedConfig
 
 
 <script src="https://npmcdn.com/es6-promise@3.2.1"></script>
@@ -23,7 +22,7 @@
 <div id="reportContainer"></div>
 <script>
     // Read embed application token from Model
-    var accessToken = "@Model.EmbedTokenString";
+    var accessToken = "@Model.EmbedToken.Token";
 
     // Read embed URL from Model
     var embedUrl = "@Html.Raw(Model.EmbedUrl)";

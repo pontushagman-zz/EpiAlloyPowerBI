@@ -9,6 +9,6 @@ namespace EpiAlloyPowerBI.Business.PowerBI
     public class EmbedToken
     {
         public string Token { get; set; }
-        public string Expiration { get; set; }
+        public DateTime Expiration { get; set; }
     }
 }

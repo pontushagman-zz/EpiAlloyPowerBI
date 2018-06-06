@@ -14,9 +14,7 @@ using EpiAlloyPowerBI.Models.ViewModels;
 using EPiServer.Web.Mvc;
 using Microsoft.Rest;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Newtonsoft.Json;
 using RestSharp;
-using RestSharp.Authenticators;
 using RestSharp.Deserializers;
 using AuthenticationContext = Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext;
 
@@ -63,14 +61,12 @@ namespace EpiAlloyPowerBI.Controllers
                 }
                 
                 //Request embed token
-
                 var requestEmbedTokenUrl = string.Format("{0}/v1.0/myorg/groups/{1}/reports/{2}/GenerateToken", ApiUrl,GroupId, ReportId);
                 var restClient = new RestClient(requestEmbedTokenUrl);
                 restClient.AddDefaultHeader("Authorization", string.Format("Bearer {0}", authenticationResult.AccessToken));
                 var request = new RestRequest(Method.POST);
-                request.AddParameter("accessLevel", "View"); // adds to POST or URL querystring based on Method
-                request.AddParameter("allowSaveAs", "false"); // adds to POST or URL querystring based on Method
-
+                request.AddParameter("accessLevel", "View"); 
+                request.AddParameter("allowSaveAs", "false"); 
                 // execute the request
                 IRestResponse response = restClient.Execute(request);
                 RestSharp.Deserializers.JsonDeserializer deserial = new JsonDeserializer();
@@ -78,7 +74,7 @@ namespace EpiAlloyPowerBI.Controllers
                 var embedToken = deserial.Deserialize<EpiAlloyPowerBI.Business.PowerBI.EmbedToken>(response);
 
                 // Generate Embed Configuration.
-                result.EmbedTokenString = embedToken.Token;
+                result.EmbedToken = embedToken;
                 result.EmbedUrl = string.Format("{0}/reportEmbed?reportId={1}&groupId={2}", EmbedUrlBase, ReportId, GroupId);  
                 result.Id = ReportId;
 
